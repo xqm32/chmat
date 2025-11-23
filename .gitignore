@@ -8,3 +8,13 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Environment variables
+.env
+
+# Data files
+*.source.xlsx
+*.target.xlsx
+
+# Log files
+*.log
