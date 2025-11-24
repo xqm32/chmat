@@ -1,6 +1,8 @@
+import json
 from glob import glob
 from itertools import batched
 from os import environ
+from pathlib import Path
 from typing import Any
 from uuid import uuid7
 
@@ -33,7 +35,7 @@ TARGET_COLLECTION_PREFIX = environ.get("TARGET_COLLECTION_PREFIX", "target_")
 CHMAT_LOG_FILE = environ.get("CHMAT_LOG_FILE", "chmat.log")
 
 openai = OpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
-qdrant = QdrantClient(url=QDRANT_URL)
+qdrant = QdrantClient(url=QDRANT_URL, timeout=600)
 
 
 def embed_data_frame(
@@ -41,6 +43,7 @@ def embed_data_frame(
     collection_column: str,
     value_column: str,
     collection_prefix: str = "source_",
+    error_prefix: str = "",
 ):
     collection_names = [
         f"{collection_prefix}{collection}"
@@ -70,19 +73,33 @@ def embed_data_frame(
             for row in rows
         ]
 
-        for data in openai.embeddings.create(
-            model=OPENAI_MODEL,
-            input=[row[value_column] for row in rows],
-        ).data:
-            points[data.index]["vector"] = data.embedding
+        try:
+            for data in openai.embeddings.create(
+                model=OPENAI_MODEL,
+                input=[row[value_column] for row in rows],
+            ).data:
+                points[data.index]["vector"] = data.embedding
 
-        for point in points:
-            collection_name = (
-                f"{collection_prefix}{point['payload'][collection_column]}"
-            )
-            qdrant.upsert(  # type: ignore
-                collection_name=collection_name,
-                points=[point],
+            for point in points:
+                collection_name = (
+                    f"{collection_prefix}{point['payload'][collection_column]}"
+                )
+                qdrant.upsert(  # type: ignore
+                    collection_name=collection_name,
+                    points=[point],
+                )
+        except Exception as e:
+            logger.error(f"Error processing batch {i + 1}: {e}")
+
+            Path(f"{error_prefix}{i + 1}.json").write_text(
+                json.dumps(
+                    {
+                        "collection_column": collection_column,
+                        "value_column": value_column,
+                        "collection_prefix": collection_prefix,
+                        "points": points,
+                    }
+                )
             )
 
 
@@ -109,6 +126,7 @@ if __name__ == "__main__":
             SOURCE_COLLECTION_COLUMN,
             SOURCE_VALUE_COLUMN,
             SOURCE_COLLECTION_PREFIX,
+            error_prefix=f"{source_file}.",
         )
 
     for target_file in target_files:
@@ -125,4 +143,5 @@ if __name__ == "__main__":
             TARGET_COLLECTION_COLUMN,
             TARGET_VALUE_COLUMN,
             TARGET_COLLECTION_PREFIX,
+            error_prefix=f"{target_file}.",
         )
