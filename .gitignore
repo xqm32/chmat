@@ -15,6 +15,7 @@ wheels/
 # Data files
 *.source.xlsx
 *.target.xlsx
+*.xlsx.*.json
 
 # Log files
 *.log
