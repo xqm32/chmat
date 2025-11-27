@@ -17,6 +17,7 @@ wheels/
 *.target.xlsx
 *.xlsx.*.json
 *.results.json
+*.results.csv
 
 # Log files
 *.log
