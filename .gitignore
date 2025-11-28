@@ -18,6 +18,7 @@ wheels/
 *.xlsx.*.json
 *.results.json
 *.results.csv
+*.snapshot
 
 # Log files
 *.log
