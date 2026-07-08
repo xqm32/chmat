@@ -10,7 +10,14 @@ from dotenv import load_dotenv
 from loguru import logger
 from openai import OpenAI
 from polars import Config, DataFrame, read_excel
-from qdrant_client import QdrantClient, models
+from qdrant_edge import (
+    Distance,
+    EdgeConfig,
+    EdgeShard,
+    EdgeVectorParams,
+    Point,
+    UpdateOperation,
+)
 
 load_dotenv()
 
@@ -19,8 +26,6 @@ OPENAI_API_KEY = environ["OPENAI_API_KEY"]
 OPENAI_MODEL = environ["OPENAI_MODEL"]
 OPENAI_DIMENSIONS = int(environ["OPENAI_DIMENSIONS"])
 OPENAI_BATCH_SIZE = int(environ.get("OPENAI_BATCH_SIZE", 1000))
-
-QDRANT_URL = environ["QDRANT_URL"]
 
 SOURCE_SKIP_ROWS = int(environ.get("SOURCE_SKIP_ROWS", 0))
 SOURCE_COLLECTION_COLUMN = environ["SOURCE_COLLECTION_COLUMN"]
@@ -35,7 +40,10 @@ TARGET_COLLECTION_PREFIX = environ.get("TARGET_COLLECTION_PREFIX", "target_")
 CHMAT_LOG_FILE = environ.get("CHMAT_LOG_FILE", "chmat.log")
 
 openai = OpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
-qdrant = QdrantClient(url=QDRANT_URL, timeout=600)
+collections = dict()
+for collection_name in glob("*", root_dir="collections"):
+    logger.info(f"Loading collection: {collection_name}")
+    collections[collection_name] = EdgeShard.load(f"collections/{collection_name}")
 
 
 def embed_data_frame(
@@ -51,13 +59,21 @@ def embed_data_frame(
     ]
 
     for collection_name in collection_names:
-        if not qdrant.collection_exists(collection_name):
+        if collection_name not in collections:
             logger.info(f"Creating collection: {collection_name}")
 
-            qdrant.create_collection(  # type: ignore
-                collection_name=collection_name,
-                vectors_config=models.VectorParams(
-                    size=OPENAI_DIMENSIONS, distance=models.Distance.COSINE
+            if not Path(f"collections/{collection_name}").exists():
+                Path(f"collections/{collection_name}").mkdir(
+                    parents=True, exist_ok=True
+                )
+
+            collections[collection_name] = EdgeShard.create(
+                f"collections/{collection_name}",
+                EdgeConfig(
+                    EdgeVectorParams(
+                        size=OPENAI_DIMENSIONS,
+                        distance=Distance.Cosine,
+                    )
                 ),
             )
 
@@ -84,9 +100,16 @@ def embed_data_frame(
                 collection_name = (
                     f"{collection_prefix}{point['payload'][collection_column]}"
                 )
-                qdrant.upsert(  # type: ignore
-                    collection_name=collection_name,
-                    points=[point],
+                collections[collection_name].update(
+                    UpdateOperation.upsert_points(
+                        [
+                            Point(
+                                id=point["id"],
+                                vector=point["vector"],
+                                payload=point["payload"],
+                            )
+                        ]
+                    )
                 )
         except Exception as e:
             logger.error(f"Error processing batch {i + 1}: {e}")

@@ -19,6 +19,7 @@ wheels/
 *.results.json
 *.results.csv
 *.snapshot
+collections
 
 # Log files
 *.log

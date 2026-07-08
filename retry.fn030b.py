@@ -3,8 +3,9 @@ from glob import glob
 from pathlib import Path
 
 from loguru import logger
+from qdrant_edge import Point, UpdateOperation
 
-from main import OPENAI_MODEL, openai, qdrant
+from main import OPENAI_MODEL, collections, openai
 
 if __name__ == "__main__":
     logger.add("retry.fn030b.log")
@@ -32,9 +33,16 @@ if __name__ == "__main__":
                 collection_name = (
                     f"{collection_prefix}{point['payload'][collection_column]}"
                 )
-                qdrant.upsert(  # type: ignore
-                    collection_name=collection_name,
-                    points=[point],
+                collections[collection_name].update(
+                    UpdateOperation.upsert_points(
+                        [
+                            Point(
+                                id=point["id"],
+                                vector=point["vector"],
+                                payload=point["payload"],
+                            )
+                        ]
+                    )
                 )
         except Exception as e:
             logger.error(f"Error processing file {error_file}: {e}")
