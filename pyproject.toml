@@ -11,4 +11,5 @@ dependencies = [
     "polars>=1.35.2",
     "python-dotenv>=1.2.1",
     "qdrant-client>=1.16.0",
+    "qdrant-edge-py>=0.7.2",
 ]
