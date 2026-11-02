@@ -17,12 +17,12 @@ if __name__ == "__main__":
 
     source_collections = [
         collection
-        for collection in collections.keys()
+        for collection in collections
         if collection.startswith(SOURCE_COLLECTION_PREFIX)
     ]
     target_collections = [
         collection
-        for collection in collections.keys()
+        for collection in collections
         if collection.startswith(TARGET_COLLECTION_PREFIX)
     ]
     logger.info(f"Source collections: {source_collections}")

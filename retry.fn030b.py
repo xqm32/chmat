@@ -44,7 +44,7 @@ if __name__ == "__main__":
                         ]
                     )
                 )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - log and keep the error file for retry
             logger.error(f"Error processing file {error_file}: {e}")
             continue
 

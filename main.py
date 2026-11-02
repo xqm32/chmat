@@ -25,14 +25,14 @@ OPENAI_BASE_URL = environ["OPENAI_BASE_URL"]
 OPENAI_API_KEY = environ["OPENAI_API_KEY"]
 OPENAI_MODEL = environ["OPENAI_MODEL"]
 OPENAI_DIMENSIONS = int(environ["OPENAI_DIMENSIONS"])
-OPENAI_BATCH_SIZE = int(environ.get("OPENAI_BATCH_SIZE", 1000))
+OPENAI_BATCH_SIZE = int(environ.get("OPENAI_BATCH_SIZE", "1000"))
 
-SOURCE_SKIP_ROWS = int(environ.get("SOURCE_SKIP_ROWS", 0))
+SOURCE_SKIP_ROWS = int(environ.get("SOURCE_SKIP_ROWS", "0"))
 SOURCE_COLLECTION_COLUMN = environ["SOURCE_COLLECTION_COLUMN"]
 SOURCE_VALUE_COLUMN = environ["SOURCE_VALUE_COLUMN"]
 SOURCE_COLLECTION_PREFIX = environ.get("SOURCE_COLLECTION_PREFIX", "source_")
 
-TARGET_SKIP_ROWS = int(environ.get("TARGET_SKIP_ROWS", 0))
+TARGET_SKIP_ROWS = int(environ.get("TARGET_SKIP_ROWS", "0"))
 TARGET_COLLECTION_COLUMN = environ["TARGET_COLLECTION_COLUMN"]
 TARGET_VALUE_COLUMN = environ["TARGET_VALUE_COLUMN"]
 TARGET_COLLECTION_PREFIX = environ.get("TARGET_COLLECTION_PREFIX", "target_")
@@ -40,7 +40,7 @@ TARGET_COLLECTION_PREFIX = environ.get("TARGET_COLLECTION_PREFIX", "target_")
 CHMAT_LOG_FILE = environ.get("CHMAT_LOG_FILE", "chmat.log")
 
 openai = OpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
-collections = dict()
+collections: dict[str, EdgeShard] = {}
 for collection_name in glob("*", root_dir="collections"):
     logger.info(f"Loading collection: {collection_name}")
     collections[collection_name] = EdgeShard.load(f"collections/{collection_name}")
@@ -111,7 +111,7 @@ def embed_data_frame(
                         ]
                     )
                 )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - log and save failed batch to retry later
             logger.error(f"Error processing batch {i + 1}: {e}")
 
             Path(f"{error_prefix}{i + 1}.json").write_text(
