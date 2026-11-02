@@ -1,3 +1,30 @@
+[settings]
+experimental = true
+
 [tools]
+"llama.cpp" = { version = "latest", prerelease = true, version_prefix = "b" }
+pitchfork = { version = "latest", workflow = "release.yml@refs/heads/main" }
 python = "3.14"
 uv = "latest"
+
+[env]
+_.file = ".env.example"
+
+[daemons.llama-cpp]
+run = "llama serve -hf ggml-org/embeddinggemma-2-GGUF:Q8_0 --embeddings"
+
+[tasks.fn011b]
+run = "uv run main.py FN_Fn011b.target.xlsx FN_Fn011b1.target.xlsx FN_Fn011b2.target.xlsx"
+env = { TARGET_SKIP_ROWS = "2", TARGET_COLLECTION_COLUMN = "Accper", TARGET_VALUE_COLUMN = "Fn011b03" }
+
+[tasks.fn030b]
+run = "uv run main.py FN_Fn030b.target.xlsx"
+env = { TARGET_SKIP_ROWS = "2", TARGET_COLLECTION_COLUMN = "Accper", TARGET_VALUE_COLUMN = "Fn030b02" }
+
+[tasks.fn061]
+run = "uv run main.py FN_Fn061.source.xlsx FN_Fn0611.source.xlsx"
+env = { SOURCE_SKIP_ROWS = "2", SOURCE_COLLECTION_COLUMN = "EndDate", SOURCE_VALUE_COLUMN = "FN_Fn06101" }
+
+[tasks.listedcoinfoanl]
+run = "uv run main.py STK_LISTEDCOINFOANL.source.xlsx"
+env = { SOURCE_SKIP_ROWS = "2", SOURCE_COLLECTION_COLUMN = "EndDate", SOURCE_VALUE_COLUMN = "FullName" }

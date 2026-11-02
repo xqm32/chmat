@@ -3,10 +3,10 @@ from glob import glob
 from itertools import batched
 from os import environ
 from pathlib import Path
+from sys import argv
 from typing import Any
 from uuid import uuid7
 
-from dotenv import load_dotenv
 from loguru import logger
 from openai import OpenAI
 from polars import Config, DataFrame, read_excel
@@ -18,8 +18,7 @@ from qdrant_edge import (
     Point,
     UpdateOperation,
 )
-
-load_dotenv()
+from rich.progress import track
 
 OPENAI_BASE_URL = environ["OPENAI_BASE_URL"]
 OPENAI_API_KEY = environ["OPENAI_API_KEY"]
@@ -78,7 +77,7 @@ def embed_data_frame(
             )
 
     batches = batched(data_frame.iter_rows(named=True), OPENAI_BATCH_SIZE)
-    for i, rows in enumerate(batches):
+    for i, rows in track(list(enumerate(batches))):
         logger.info(f"Processing batch {i + 1}")
 
         points: list[dict[str, Any]] = [
@@ -127,12 +126,15 @@ def embed_data_frame(
 
 
 if __name__ == "__main__":
+    logger.remove()
     logger.add(CHMAT_LOG_FILE)
 
-    source_files = glob("*.source.xlsx")
+    files = argv[1:]
+
+    source_files = [i for i in files if i.endswith(".source.xlsx")]
     logger.info(f"Found source files: {source_files}")
 
-    target_files = glob("*.target.xlsx")
+    target_files = [i for i in files if i.endswith(".target.xlsx")]
     logger.info(f"Found target files: {target_files}")
 
     for source_file in source_files:
