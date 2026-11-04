@@ -31,3 +31,6 @@ env = { SOURCE_SKIP_ROWS = "2", SOURCE_COLLECTION_COLUMN = "EndDate", SOURCE_VAL
 
 [tasks.main]
 run = ["mise run fn011b", "mise run fn030b", "mise run fn061", "mise run listedcoinfoanl"]
+
+[tasks.search]
+run = "uv run search.py"
