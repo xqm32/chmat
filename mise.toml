@@ -37,3 +37,6 @@ run = "uv run search.py"
 
 [tasks.collect]
 run = "uv run collect.stomach.py"
+
+[tasks.all]
+run = ["mise run main", "mise run search", "mise run collect"]
