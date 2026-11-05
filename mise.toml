@@ -34,3 +34,6 @@ run = ["mise run fn011b", "mise run fn030b", "mise run fn061", "mise run listedc
 
 [tasks.search]
 run = "uv run search.py"
+
+[tasks.collect]
+run = "uv run collect.stomach.py"
