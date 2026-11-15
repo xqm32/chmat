@@ -29,6 +29,14 @@ env = { SOURCE_SKIP_ROWS = "2", SOURCE_COLLECTION_COLUMN = "EndDate", SOURCE_VAL
 run = "uv run main.py STK_LISTEDCOINFOANL.source.xlsx"
 env = { SOURCE_SKIP_ROWS = "2", SOURCE_COLLECTION_COLUMN = "EndDate", SOURCE_VALUE_COLUMN = "FullName" }
 
+[tasks.purchaseinfo]
+run = "uv run main.py SC_TopFivePurchaseInfo.target.xlsx"
+env = { TARGET_SKIP_ROWS = "2", TARGET_COLLECTION_COLUMN = "EndDate", TARGET_VALUE_COLUMN = "InstitutionName" }
+
+[tasks.saleinfo]
+run = "uv run main.py SC_TopFiveSaleInfo.target.xlsx"
+env = { TARGET_SKIP_ROWS = "2", TARGET_COLLECTION_COLUMN = "EndDate", TARGET_VALUE_COLUMN = "InstitutionName" }
+
 [tasks.main]
 run = ["mise run fn011b", "mise run fn030b", "mise run fn061", "mise run listedcoinfoanl"]
 

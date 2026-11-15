@@ -16,6 +16,8 @@ if __name__ == "__main__":
 
     fn011b03_results: list[dict[str, Any]] = []
     fn030b02_results: list[dict[str, Any]] = []
+    purchase_results: list[dict[str, Any]] = []
+    sale_results: list[dict[str, Any]] = []
 
     for results_file in results_files:
         logger.info(f"Processing file: {results_file}")
@@ -43,8 +45,28 @@ if __name__ == "__main__":
                         f"{source_prefix}score": source_score,
                     }
                 )
-            else:
+            elif "Fn030b02" in target_payload:
                 fn030b02_results.append(
+                    {
+                        f"{target_prefix}id": target_id,
+                        **{f"{target_prefix}{k}": v for k, v in target_payload.items()},
+                        f"{source_prefix}id": source_id,
+                        **{f"{source_prefix}{k}": v for k, v in source_payload.items()},
+                        f"{source_prefix}score": source_score,
+                    }
+                )
+            elif "PurchaseAmount" in target_payload:
+                purchase_results.append(
+                    {
+                        f"{target_prefix}id": target_id,
+                        **{f"{target_prefix}{k}": v for k, v in target_payload.items()},
+                        f"{source_prefix}id": source_id,
+                        **{f"{source_prefix}{k}": v for k, v in source_payload.items()},
+                        f"{source_prefix}score": source_score,
+                    }
+                )
+            elif "SalesAmount" in target_payload:
+                sale_results.append(
                     {
                         f"{target_prefix}id": target_id,
                         **{f"{target_prefix}{k}": v for k, v in target_payload.items()},
@@ -56,8 +78,14 @@ if __name__ == "__main__":
 
     logger.info(f"Total Fn011b03 results: {len(fn011b03_results)}")
     logger.info(f"Total Fn030b02 results: {len(fn030b02_results)}")
+    logger.info(f"Total Purchase results: {len(purchase_results)}")
+    logger.info(f"Total Sale results: {len(sale_results)}")
 
     fn011b03_df = DataFrame(fn011b03_results, infer_schema_length=None)
     fn011b03_df.write_csv("fn011b03.results.csv")
     fn030b02_df = DataFrame(fn030b02_results, infer_schema_length=None)
     fn030b02_df.write_csv("fn030b02.results.csv")
+    purchase_df = DataFrame(purchase_results, infer_schema_length=None)
+    purchase_df.write_csv("purchase.results.csv")
+    sale_df = DataFrame(sale_results, infer_schema_length=None)
+    sale_df.write_csv("sale.results.csv")
