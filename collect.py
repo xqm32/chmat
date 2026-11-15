@@ -6,7 +6,7 @@ from typing import Any
 from loguru import logger
 from polars import DataFrame
 
-from main import SOURCE_COLLECTION_PREFIX, TARGET_COLLECTION_PREFIX
+from env import SOURCE_COLLECTION_PREFIX, TARGET_COLLECTION_PREFIX
 
 if __name__ == "__main__":
     logger.add("collect.log")

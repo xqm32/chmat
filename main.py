@@ -1,7 +1,6 @@
 import json
 from glob import glob
 from itertools import batched
-from os import environ
 from pathlib import Path
 from sys import argv
 from typing import Any
@@ -20,23 +19,22 @@ from qdrant_edge import (
 )
 from rich.progress import track
 
-OPENAI_BASE_URL = environ["OPENAI_BASE_URL"]
-OPENAI_API_KEY = environ["OPENAI_API_KEY"]
-OPENAI_MODEL = environ["OPENAI_MODEL"]
-OPENAI_DIMENSIONS = int(environ["OPENAI_DIMENSIONS"])
-OPENAI_BATCH_SIZE = int(environ.get("OPENAI_BATCH_SIZE", "1000"))
-
-SOURCE_SKIP_ROWS = int(environ.get("SOURCE_SKIP_ROWS", "0"))
-SOURCE_COLLECTION_COLUMN = environ["SOURCE_COLLECTION_COLUMN"]
-SOURCE_VALUE_COLUMN = environ["SOURCE_VALUE_COLUMN"]
-SOURCE_COLLECTION_PREFIX = environ.get("SOURCE_COLLECTION_PREFIX", "source_")
-
-TARGET_SKIP_ROWS = int(environ.get("TARGET_SKIP_ROWS", "0"))
-TARGET_COLLECTION_COLUMN = environ["TARGET_COLLECTION_COLUMN"]
-TARGET_VALUE_COLUMN = environ["TARGET_VALUE_COLUMN"]
-TARGET_COLLECTION_PREFIX = environ.get("TARGET_COLLECTION_PREFIX", "target_")
-
-CHMAT_LOG_FILE = environ.get("CHMAT_LOG_FILE", "chmat.log")
+from env import (
+    CHMAT_LOG_FILE,
+    OPENAI_API_KEY,
+    OPENAI_BASE_URL,
+    OPENAI_BATCH_SIZE,
+    OPENAI_DIMENSIONS,
+    OPENAI_MODEL,
+    SOURCE_COLLECTION_COLUMN,
+    SOURCE_COLLECTION_PREFIX,
+    SOURCE_SKIP_ROWS,
+    SOURCE_VALUE_COLUMN,
+    TARGET_COLLECTION_COLUMN,
+    TARGET_COLLECTION_PREFIX,
+    TARGET_SKIP_ROWS,
+    TARGET_VALUE_COLUMN,
+)
 
 openai = OpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
 collections: dict[str, EdgeShard] = {}
